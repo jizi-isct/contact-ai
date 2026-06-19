@@ -35,7 +35,7 @@ export default {
 		const req = await request.json<RequestType>()
 		const workersAI = createWorkersAI({ binding: env.AI });
 		const result = await generateText({
-			model: workersAI('@cf/meta/llama-3.1-8b-instruct'),
+			model: workersAI('@cf/meta/llama-guard-3-8b'),
 			system: systemPrompt,
 			prompt: JSON.stringify(req),
 			output: Output.object({
