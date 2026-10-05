@@ -9,13 +9,13 @@
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
-		"@types/node": "^25.9.1",
-		"typescript": "^5.5.2",
-		"wrangler": "^4.97.0"
+		"@types/node": "^26.6.4",
+		"typescript": "^7.0.2",
+		"wrangler": "^4.147.0"
 	},
 	"dependencies": {
-		"ai": "^6.0.195",
-		"workers-ai-provider": "^3.1.14",
-		"zod": "^4.4.3"
+		"ai": "^7.0.127",
+		"workers-ai-provider": "^4.0.0",
+		"zod": "^4.6.5"
 	}
 }
