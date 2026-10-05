@@ -1,0 +1,8 @@
+node_modules/
+.cloudflare/
+.wrangler/
+dist/
+coverage/
+bun.lock
+.dev.vars*
+.env*

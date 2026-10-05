@@ -125,7 +125,7 @@ test('ロールIDをキャッシュせず呼び出しごとに渡された環境
 });
 
 test('全ての部門のロールを必須とし、不正なIDを拒否する', () => {
-	const { technical, ...missingTechnical } = env.DISCORD_ROLE_IDS;
+	const { technical: _technical, ...missingTechnical } = env.DISCORD_ROLE_IDS;
 	assert.equal(v.safeParse(discordRoleEnvSchema, { ...env, DISCORD_ROLE_IDS: missingTechnical }).success, false);
 	assert.throws(() => buildDiscordMessage(contact, { ...env, DISCORD_ERROR_ROLE_ID: '' }));
 	assert.throws(() => buildDiscordMessage(contact, { ...env, DISCORD_ROLE_IDS: { ...env.DISCORD_ROLE_IDS, technical: 'not-a-role-id' } }));

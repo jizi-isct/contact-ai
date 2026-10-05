@@ -57,17 +57,13 @@ export function buildDiscordMessage(input: DiscordContact, env: DiscordRoleEnv, 
 	const departmentRoleIds = roleEnv.DISCORD_ROLE_IDS;
 	const roleIds = new Map<string, string>(Object.entries(departmentRoleIds));
 	const isPrivate = contact.security || contact.departmentId === 'mediaRelations';
-	const departmentRoleId = contact.security
-		? departmentRoleIds.other
-		: (roleIds.get(contact.departmentId) ?? departmentRoleIds.technical);
+	const departmentRoleId = contact.security ? departmentRoleIds.other : (roleIds.get(contact.departmentId) ?? departmentRoleIds.technical);
 	const mentionTo = config.error ? roleEnv.DISCORD_ERROR_ROLE_ID : departmentRoleId;
 	const receivedAt = config.receivedAt ?? new Date();
 	const payload: DiscordWebhookPayload = {
 		username: config.username || undefined,
 		avatar_url: config.avatarUrl || undefined,
-		content: config.error
-			? `<@&${mentionTo}> 問い合わせの自動振り分けに失敗しました。`
-			: `<@&${mentionTo}>`,
+		content: config.error ? `<@&${mentionTo}> 問い合わせの自動振り分けに失敗しました。` : `<@&${mentionTo}>`,
 		allowed_mentions: { parse: [], roles: [mentionTo] },
 		embeds: [
 			{

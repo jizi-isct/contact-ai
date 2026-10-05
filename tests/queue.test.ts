@@ -13,8 +13,12 @@ function mockQueue(send: (message: unknown) => Promise<void>): Queue {
 			await send(message);
 			return { metadata: { metrics: { backlogCount: 1, backlogBytes: 100 } } };
 		},
-		async sendBatch() { assert.fail('Unexpected batch send'); },
-		async metrics() { assert.fail('Unexpected queue metrics request'); },
+		async sendBatch() {
+			assert.fail('Unexpected batch send');
+		},
+		async metrics() {
+			assert.fail('Unexpected queue metrics request');
+		},
 	};
 }
 
@@ -23,17 +27,28 @@ const queueEnv = {
 	...env,
 	DISCORD_PUBLIC_WEBHOOK_URL: webhooks.publicUrl,
 	DISCORD_PRIVATE_WEBHOOK_URL: webhooks.privateUrl,
-	CONTACT_DLQ: mockQueue(async () => { assert.fail('Unexpected DLQ send'); }),
+	CONTACT_DLQ: mockQueue(async () => {
+		assert.fail('Unexpected DLQ send');
+	}),
 } as Env;
 
 function queueBatch(body: unknown, attempts = 1) {
 	const batch = {
 		queue: 'contact-queue',
-		messages: [{
-			id: 'message-1', timestamp: receivedAt, body, attempts,
-			ack(): void { batch.acknowledged++; },
-			retry(options?: QueueRetryOptions): void { batch.retries.push(options ?? {}); },
-		}],
+		messages: [
+			{
+				id: 'message-1',
+				timestamp: receivedAt,
+				body,
+				attempts,
+				ack(): void {
+					batch.acknowledged++;
+				},
+				retry(options?: QueueRetryOptions): void {
+					batch.retries.push(options ?? {});
+				},
+			},
+		],
 		metadata: { metrics: { backlogCount: 1, backlogBytes: 100 } },
 		ackAll() {},
 		retryAll() {},
@@ -172,10 +187,11 @@ test('Queue consumerはHTTP日時形式のRetry-Afterヘッダーに対応する
 		for (const offsetSeconds of [90, -90]) {
 			const batch = queueBatch(contact);
 			await withMockFetch(
-				async () => new Response('', {
-					status: 429,
-					headers: { 'Retry-After': new Date(receivedAt.getTime() + offsetSeconds * 1000).toUTCString() },
-				}),
+				async () =>
+					new Response('', {
+						status: 429,
+						headers: { 'Retry-After': new Date(receivedAt.getTime() + offsetSeconds * 1000).toUTCString() },
+					}),
 				() => worker.queue(batch, queueEnv),
 			);
 			assert.equal(batch.acknowledged, 0);
@@ -188,14 +204,18 @@ test('Queue consumerはHTTP日時形式のRetry-Afterヘッダーに対応する
 
 test('Queue consumerは試行回数が5回を超えたメッセージを、不正なものも含めて元の本文のままDLQへ転送する', async () => {
 	await withMockFetch(
-		async () => { throw new Error('Discord must not be called after five attempts'); },
+		async () => {
+			throw new Error('Discord must not be called after five attempts');
+		},
 		async () => {
 			for (const body of [contact, { invalid: 'message' }]) {
 				const batch = queueBatch(body, 6);
 				const sent: unknown[] = [];
 				await worker.queue(batch, {
 					...queueEnv,
-					CONTACT_DLQ: mockQueue(async (message) => { sent.push(message); }),
+					CONTACT_DLQ: mockQueue(async (message) => {
+						sent.push(message);
+					}),
 				});
 				assert.deepEqual(sent, [body]);
 				assert.equal(batch.acknowledged, 1);
@@ -211,7 +231,10 @@ test('Queue consumerはDLQへの転送成功を待ってACKする', async () => 
 	const sent = Promise.withResolvers<void>();
 	const processing = worker.queue(batch, {
 		...queueEnv,
-		CONTACT_DLQ: mockQueue(async () => { started.resolve(); await sent.promise; }),
+		CONTACT_DLQ: mockQueue(async () => {
+			started.resolve();
+			await sent.promise;
+		}),
 	});
 	await started.promise;
 	assert.equal(batch.acknowledged, 0);
@@ -226,7 +249,10 @@ test('Queue consumerはDLQへの転送失敗時に元のメッセージをACKせ
 	let calls = 0;
 	await worker.queue(batch, {
 		...queueEnv,
-		CONTACT_DLQ: mockQueue(async () => { calls++; throw new Error('DLQ unavailable'); }),
+		CONTACT_DLQ: mockQueue(async () => {
+			calls++;
+			throw new Error('DLQ unavailable');
+		}),
 	});
 	assert.equal(calls, 1);
 	assert.equal(batch.acknowledged, 0);

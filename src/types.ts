@@ -32,7 +32,7 @@ export type QueueMessage = v.InferOutput<typeof queueMessageSchema>;
 export const clefResponseSchema = v.object({
 	answers: v.object({
 		security: v.object({
-			type: v.literal("noul"),
+			type: v.literal('noul'),
 			noul: v.number(),
 		}),
 		team: v.object({

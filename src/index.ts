@@ -3,7 +3,7 @@ import { buildDiscordMessage, DiscordWebhookError, sendDiscordMessage } from './
 import { clefResponseSchema, departmentIds, queueMessageSchema, type RequestType, type QueueMessage } from './types';
 
 export default {
-	async fetch(request, env, ctx): Promise<Response> {
+	async fetch(request, env): Promise<Response> {
 		const req = await request.json<RequestType>();
 		const response = await env.AI.run('@cf/cloudflare/clef', {
 			model: 'clef',

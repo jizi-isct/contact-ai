@@ -36,10 +36,7 @@
 
 		/* Skip type checking all .d.ts files. */
 		"skipLibCheck": true,
-		"types": [
-			"./.cloudflare/types/index.d.ts",
-			"node"
-		]
+		"types": ["./.cloudflare/types/index.d.ts", "node"]
 	},
-	"include": [".cloudflare/types/**/*.d.ts", "src/**/*.ts"]
+	"include": [".cloudflare/types/**/*.d.ts", "src/**/*.ts", "tests/**/*.ts", "cloudflare.config.ts", "wrangler.config.ts"]
 }
