@@ -2,11 +2,14 @@
 	"name": "contact-ai",
 	"version": "0.0.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "cf workers types",
+		"typecheck": "cf workers types && tsc --noEmit",
+		"test": "bun test"
 	},
 	"devDependencies": {
 		"@types/node": "^26.6.4",
@@ -16,7 +19,7 @@
 	},
 	"dependencies": {
 		"ai": "^7.0.127",
-		"workers-ai-provider": "^4.0.0",
-		"zod": "^4.6.5"
+		"valibot": "^1.5.0",
+		"workers-ai-provider": "^4.0.0"
 	}
 }

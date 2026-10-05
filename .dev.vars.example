@@ -1,0 +1,4 @@
+# Copy to .dev.vars and fill in your webhook URLs for local development.
+# Public: forum channel webhook. Private: private text-channel webhook.
+DISCORD_PUBLIC_WEBHOOK_URL=""
+DISCORD_PRIVATE_WEBHOOK_URL=""

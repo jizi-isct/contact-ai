@@ -37,9 +37,9 @@
 		/* Skip type checking all .d.ts files. */
 		"skipLibCheck": true,
 		"types": [
-			"./worker-configuration.d.ts",
+			"./.cloudflare/types/index.d.ts",
 			"node"
 		]
 	},
-	"include": ["worker-configuration.d.ts", "src/**/*.ts"]
+	"include": [".cloudflare/types/**/*.d.ts", "src/**/*.ts"]
 }

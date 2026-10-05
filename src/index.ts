@@ -1,9 +1,11 @@
-import { RequestType } from './types';
+import * as v from 'valibot';
+import { buildDiscordMessage, DiscordWebhookError, sendDiscordMessage } from './discord';
+import { clefResponseSchema, departmentIds, queueMessageSchema, type RequestType, type QueueMessage } from './types';
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const req = await request.json<RequestType>();
-		const result = await env.AI.run('@cf/cloudflare/clef', {
+		const response = await env.AI.run('@cf/cloudflare/clef', {
 			model: 'clef',
 			state: req,
 			questions: {
@@ -26,10 +28,46 @@ export default {
 						lostAndFound: '渉内局。落とし物、忘れ物に関する問い合わせ',
 						technical: 'ネットワーク局。Webサイト、フォーム、メール、システムの不具合に関する問い合わせ',
 						other: 'どれにも該当しないお問い合せ',
-					},
+					} satisfies Record<(typeof departmentIds)[number], string>,
 				},
 			},
 		});
-		//TODO 結果を返す
+		const result = v.parse(clefResponseSchema, response);
+		const message = {
+			departmentId: result.answers.team.choice,
+			security: result.answers.security.noul >= 0.5,
+			name: req.name,
+			email: req.email,
+			company_or_group_name: req.company_or_group_name,
+			body: req.body,
+		} satisfies QueueMessage;
+		await env.CONTACT_QUEUE.send(message);
+
+		return new Response('OK');
+	},
+	async queue(batch, env): Promise<void> {
+		for (const queuedMessage of batch.messages) {
+			try {
+				if (queuedMessage.attempts > 5) {
+					await env.CONTACT_DLQ.send(queuedMessage.body);
+				} else {
+					const message = v.parse(queueMessageSchema, queuedMessage.body);
+					const notification = buildDiscordMessage(message, env, {
+						receivedAt: queuedMessage.timestamp,
+					});
+					await sendDiscordMessage(notification, {
+						publicUrl: env.DISCORD_PUBLIC_WEBHOOK_URL,
+						privateUrl: env.DISCORD_PRIVATE_WEBHOOK_URL,
+					});
+				}
+				queuedMessage.ack();
+			} catch (error) {
+				const backoffSeconds = Math.min(30 * 2 ** (queuedMessage.attempts - 1), 600);
+				const retryAfterSeconds = error instanceof DiscordWebhookError && error.status === 429 ? error.retryAfterSeconds : undefined;
+				// Queue delays must be whole seconds and cannot exceed 24 hours.
+				const delaySeconds = Math.min(86400, Math.max(1, Math.ceil(retryAfterSeconds ?? backoffSeconds)));
+				queuedMessage.retry({ delaySeconds });
+			}
+		}
 	},
 } satisfies ExportedHandler<Env>;
