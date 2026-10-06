@@ -33,6 +33,7 @@ export default {
 			},
 		});
 		const result = v.parse(clefResponseSchema, response);
+		console.log({ req, result });
 		const message = {
 			departmentId: result.answers.team.choice,
 			security: result.answers.security.noul >= 0.5,
